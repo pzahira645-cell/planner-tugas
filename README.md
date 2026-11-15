@@ -1,17 +1,49 @@
-# planner_tugas
+# Planner Tugas Kuliah
 
-A new Flutter project.
+Aplikasi Flutter untuk mencatat tugas kuliah. Dibuat untuk Tugas Rutin 7
+Pemrograman Mobile (State Management).
 
-## Getting Started
+## Fitur
+- Daftar tugas dengan filter Semua / Aktif / Selesai
+- Tambah tugas lewat form (judul, mata kuliah, tenggat)
+- Tandai selesai dan hapus tugas
+- Halaman statistik: total, selesai, persentase
+- Badge jumlah tugas aktif di ikon statistik
 
-This project is a starting point for a Flutter application.
+## Cara menjalankan
+```
+flutter pub get
+flutter run
+flutter test
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Diagram letak state
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```
+ChangeNotifierProvider<TugasProvider>   <-- STATE BERSAMA (List<TugasKuliah>)
+        |
+   MaterialApp.router (go_router)
+        |
+   +----+----------------+-----------------+
+   |                     |                 |
+DaftarPage           TambahPage       StatistikPage
+(filter = state      (TextEditing-    (watch Provider)
+ LOKAL setState;      Controller =
+ select utk badge)    state LOKAL)
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Alasan pemilihan
+| State | Letak | Alasan |
+|---|---|---|
+| Filter (Semua/Aktif/Selesai) | setState di DaftarPage | Ephemeral: hanya dipakai satu halaman |
+| TextEditingController | State TambahPage (initState/dispose) | Ephemeral: hanya hidup selama form tampil |
+| Daftar tugas | Provider (ChangeNotifier) | App state: dipakai 3 halaman dan badge |
+
+Saya memilih **Provider** karena aplikasinya kecil-sedang, boilerplate sedikit,
+dan logikanya (TugasProvider) tidak bergantung pada UI sehingga mudah diuji.
+Badge memakai `context.select` agar hanya dibangun ulang ketika jumlah tugas
+aktif berubah.
+
+## Pengujian
+4 unit test pada `test/tugas_provider_test.dart`: tambah, tandaiSelesai,
+hapus, dan perhitungan persen.
